@@ -1,0 +1,145 @@
+<!DOCTYPE HTML>
+<!--  -->
+<html>
+<head>
+	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+	<meta name="pml" content="junctionVar Test" />
+
+	<title>junctionVar Test</title>
+<script src="junctionVar.js" > </script>
+<script type="text/javascript">
+/*
+                                      \   /
+                                   test   junctionVar
+                                      /   \     
+
+testRaw()//Raw, non automatisée, version la plus simple et rapide
+testLib()//Lib par function junctionVar 
+testAppend()//Append sur Object => junctionVar (get)
+
+/*
+                                      \   /
+                                 append   test
+                                      /   \     
+*/
+function testAppend(){
+//écritiure
+    var unObjet = new testObj("test")
+    var a = unObjet.junctionVar
+    // autre écriture
+    var a = new testObj("test").junctionVar
+    // autre écriture
+    var a =  Object.junctionVar (new testObj("test"))
+//test    
+    function testObj(data){this.test = data}
+    testObj.prototype.test="origine"  
+    var b = a, c=a
+    var t =new testObj("test b ")
+    console.log (a.test,b.test,c.test,t.test)
+    b(t)
+    console.log (a.test,b.test,c.test,t.test)
+    c (new testObj("test c "))
+    console.log (a.test,b.test,c.test,t.test)
+    b.test = "masque"//masque pour toujours test 
+    console.log (a.test,b.test,c.test,t.test)
+    delete a.test //démasque pour toujour test
+    delete a.test //delete ne supprime pas le prototype excepté avec ...prototype.test par exemple
+    console.log (a.test,b.test,c.test,t.test)
+
+    console.log("fin recherche 3")
+}
+/*
+                                      \   /
+                                    lib   test
+                                      /   \     
+*/
+function testLib(){
+//écritiure
+    var a = junctionVarObject()
+    a (new testObj("test"))
+    //autre écriture
+    var a = junctionVarObject(new testObj("test"))
+//test
+    function testObj(data){this.test = data}
+    testObj.prototype.test="origine"  
+    var b = a, c=a
+    var t =new testObj("test b ")
+    b(t)
+    console.log (a.test,b.test,c.test,t.test)
+    c (new testObj("test c "))
+    console.log (a.test,b.test,c.test,t.test)
+    b.test = "masque"//masque pour toujours test 
+    console.log (a.test,b.test,c.test,t.test)
+    delete a.test //démasque pour toujour test
+    delete a.test //delete ne supprime pas le prototype excepté avec ...prototype.test par exemple
+    console.log (a.test,b.test,c.test,t.test)
+
+    console.log("fin recherche 2")
+}
+/*
+                                      \   /
+                                    raw   test
+                                      /   \     
+*/
+function testRaw(){
+//test
+    function testObj(data){this.test = data}
+    testObj.prototype.test="origine"  
+    myJunctionVar (new testObj("test"))
+    var b = myJunctionVar, c=myJunctionVar
+    var t =new testObj("test b ")
+    b(t)
+    console.log (myJunctionVar.test,b.test,c.test,t.test)
+    c (new testObj("test c "))
+    console.log (myJunctionVar.test,b.test,c.test,t.test)
+    b.test = "masque"//masque pour toujours test 
+    console.log (myJunctionVar.test,b.test,c.test,t.test)
+    delete myJunctionVar.test //démasque pour toujour test
+    delete myJunctionVar.test //delete ne supprime pas le prototype excepté avec ...prototype.test par exemple
+    console.log (myJunctionVar.test,b.test,c.test,t.test)
+
+    myJunctionVar ({test:"test"})
+    var b = myJunctionVar, c=myJunctionVar
+    console.log (myJunctionVar.test,b.test,c.test)
+    myJunctionVar ({test:"test B "})
+    console.log (myJunctionVar.test,b.test,c.test)
+
+//limite: ne marche que avec des type Object
+    myJunctionVar (new String("test"))
+    var b = myJunctionVar, c=myJunctionVar
+    console.log (myJunctionVar,b,c)
+    b (new String("test B "))
+    console.log (myJunctionVar,b,c)
+    console.log("fin recherche 1")
+}
+</script>
+</head>
+<body>
+<pre>
+
+                                      \   /
+                                   test   junctionVar
+                                      /   \     
+--idée:
+    Jonction sur un variant
+    D'une façon imagée, comment faire des miroirs en pouvant changer l'origine du reflect depuis nimporte quel miroir.
+    Le but est d'avoir la certitude que plusieur variables désignent bien le même objet même si l'objet désigné change.
+    En plus on veut pouvoir changer cet objet depuis nimporte quelle variable (de ce groupe).
+    En javascript il est impossible d'accèder à la référence réelle d'un objet.    
+    junctionVar répond, avec une contrainte dans l'écriture de l'affectation, en créant une fonction conteneur qui hérite du contenu
+    L'affectation depuis nimporte quel variable (miroir) s'écrira:  unMiroir(autreReflet)  au lieu de  unMiroir = autreReflet , ce qui casserait le miroir.  
+    Autrement dit c'est une jonction dont le contenu est variable
+    Lorsque l'on affecte une jonction à une variable c'est un raccordement
+    Tout raccordement permet de modifier le contenu de la jonction
+    Un raccordement à la jonction peut être détruit 
+--nom:
+    Le premier nom était refVar qui vient de référence sur un variant
+    Le nom de junctionVar, plus explicite, a été adopté 
+--Pour aller plus loin, consulter dans les muObject:
+    Le miroir mirrorObject ou seul un propriétaire de la jonction peut en modifier son contenu  
+    Le pass passObject permet de controler un droit d'accès
+    Les envois sends sendsObject permet de contrôler les communications d'Object dans les deux sens
+    Les flux flowsObject avec gestion de priorité
+</pre>
+</body>
+</html>
