@@ -21,10 +21,10 @@
                                         /   \     
 */
     function lib(libObj){
-        libObj.junctionNotify = function (obj){
-            var fp = Object.getOwnPropertyNames(junctionNotify).reduce(function(m,c){m[c]=true; return m},{})
+        libObj.junctionNotifyF = function (obj){
+            var fp = Object.getOwnPropertyNames(junctionNotifyF).reduce(function(m,c){m[c]=true; return m},{})
             var callControl = ""
-            function junctionNotify(obj, abort, callBack){
+            function junctionNotifyF(obj, abort, callBack){
                 //retourne l'origine précédente, false en cas de refus d'action par callBack ou un objet retourné par callBack (qui s'occupe de tout)
                 //abort et callBack sont en option 
                 //un callBack (enregistré) si il existe est toujours appelé en début d'action    
@@ -35,29 +35,29 @@
                 //      callBack=>par défaut, le callBack précédent, si il existe est utilisé
                 //      callBack=>"": pas ou plus de callBack
                 //      callBack=>uneFonction: elle permet de valider ou non l'acttion sur junction.
-                //                  Elle reçoit junctionNotify, obj, et abort
+                //                  Elle reçoit junctionNotifyF, obj, et abort
                 //                  Elle retourne true ou false pour valider l'action, ou un objet qui peut être l'origine précédente si elle s'occupe de tout  
-                var tp = Object.getOwnPropertyNames(junctionNotify)//IE9 oki plus tard utiliser getOwnPropertyDescriptors => not IE
-                var origine = Object.getPrototypeOf(junctionNotify)
-                var callRep = typeof callControl == "function"?callBack(junctionNotify, obj, abort):true
+                var tp = Object.getOwnPropertyNames(junctionNotifyF)//IE9 oki plus tard utiliser getOwnPropertyDescriptors => not IE
+                var origine = Object.getPrototypeOf(junctionNotifyF)
+                var callRep = typeof callControl == "function"?callBack(junctionNotifyF, obj, abort):true
                 if (typeof callBack == "function" || callBack == "" )callControl = callBack
                 if (callRep !== true) return callRep                
                 if(typeof obj=="object"){
-                    Object.setPrototypeOf(junctionNotify, obj)//IE>10
-                    if (argument.length<2) {for (var op in tp) {
-                        if (!fp[tp[op]]) {origine[tp[op]] =  junctionNotify[tp[op]]; delete junctionNotify[tp[op]]}}//defaut: maj origine et maintient 
+                    Object.setPrototypeOf(junctionNotifyF, obj)//IE>10
+                    if (arguments.length<2) {for (var op in tp) {
+                        if (!fp[tp[op]]) {origine[tp[op]] =  junctionNotifyF[tp[op]]; delete junctionNotifyF[tp[op]]}}//defaut: maj origine et maintient 
                         return origine
                         }
-                    if (abort === true){for (var op in tp) {if (!fp[tp[op]]) {delete junctionNotify[tp[op]]}}; return origine}//pas de maintient ni maj origine
-                    for (var op in tp) {if (!fp[tp[op]]) {origine[tp[op]] =  junctionNotify[tp[op]]}}//maintient et maj origine
+                    if (abort === true){for (var op in tp) {if (!fp[tp[op]]) {delete junctionNotifyF[tp[op]]}}; return origine}//pas de maintient ni maj origine
+                    for (var op in tp) {if (!fp[tp[op]]) {origine[tp[op]] =  junctionNotifyF[tp[op]]}}//maintient et maj origine
                     return origine
                     }
-                if(obj==""){for (var op in tp) {if (!fp[tp[op]]) {delete junctionNotify[tp[op]]}}}
+                if(obj==""){for (var op in tp) {if (!fp[tp[op]]) {delete junctionNotifyF[tp[op]]}}}
                 return origine
                 }
             if (!obj)obj = {}
-            junctionNotify(obj)
-            return junctionNotify
+            junctionNotifyF(obj)
+            return junctionNotifyF
             }
         }
 /*
@@ -72,8 +72,3 @@
                                       end   code
                                         /   \     
 */
-// pour test:
-    if (!mu)var mu = {}
-    lib(mu)//active le module
-    lib(Object)//active append sur Object
-

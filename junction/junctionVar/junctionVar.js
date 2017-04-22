@@ -22,25 +22,25 @@
                                         /   \     
 */
     function lib(libObj){
-        libObj.junctionVar = function (obj){
-            var fp = Object.getOwnPropertyNames(junctionVar).reduce(function(m,c){m[c]=true; return m},{})
-            function junctionVar(obj){
+        libObj.junctionVarF = function (obj){
+            var fp = Object.getOwnPropertyNames(junctionVarF).reduce(function(m,c){m[c]=true; return m},{})
+            function junctionVarF(obj){
                 //retourne toujours l'origine précédente
                 //obj=>object: mise à jour reflet d'origine, clear propriétés d'instance junction et changement de reflet, 
                 //obj=>"": clear propriétés d'instance junction
                 //  note: pour ne pas mettre à jour reflet d'origine, faire un clear avant changement de reflet
-                var tp = Object.getOwnPropertyNames(junctionVar)//IE9 oki plus tard utiliser getOwnPropertyDescriptors => not IE
-                var origine = Object.getPrototypeOf(junctionVar)//IE>10
+                var tp = Object.getOwnPropertyNames(junctionVarF)//IE9 oki plus tard utiliser getOwnPropertyDescriptors => not IE
+                var origine = Object.getPrototypeOf(junctionVarF)//IE>10
                 if(obj instanceof Object){
-                        for (var op in tp) {if (!fp[tp[op]]) {origine[tp[op]] = junctionVar[tp[op]]; delete junctionVar[tp[op]]}}
-                        Object.setPrototypeOf(junctionVar, obj)//IE>10
+                        for (var op in tp) {if (!fp[tp[op]]) {origine[tp[op]] = junctionVarF[tp[op]]; delete junctionVarF[tp[op]]}}
+                        Object.setPrototypeOf(junctionVarF, obj)//IE>10
                         }
-                if(obj==""){ for (var op in tp) {if (!fp[tp[op]]) {delete junctionVar[tp[op]]}}}
+                if(obj==""){ for (var op in tp) {if (!fp[tp[op]]) {delete junctionVarF[tp[op]]}}}
                 return origine
                 }
             if (!obj)obj ={}
-            junctionVar(obj)
-            return junctionVar
+            junctionVarF(obj)
+            return junctionVarF
             }
         }
 /*
@@ -48,19 +48,21 @@
                                       raw   code
                                         /   \     
 */
-    function raw(){
+    function raw(){ // pas de gestion du clear ni mise à jour origine
         //écritiure:
-        oneJunctionVar = function (obj){//simple sans controle ni mise à jours origine reflet
-            var propertyNames = Object.getOwnPropertyNames(oneJunctionVar)
-            for (var i in propertyNames) {delete oneJunctionVar[propertyNames[i]]}
-            Object.setPrototypeOf(oneJunctionVar, obj)
+        oneJunctionVarF = function (obj){//simple sans controle ni mise à jours origine reflet
+            var propertyNames = Object.getOwnPropertyNames(oneJunctionVarF)
+            for (var i in propertyNames) {delete oneJunctionVarF[propertyNames[i]]}
+            Object.setPrototypeOf(oneJunctionVarF, obj)
             }
-        myJunctionVar = function (obj){//simple avec controle object mise à jour et return origine reflet avant changement d'origine
-            var origine = Object.getPrototypeOf(myJunctionVar)
+        myJunctionVarF = function (obj){//pas de gestion du clear mais mise à jour de l'origine et return origine reflet avant changement d'origine
+            var origine = Object.getPrototypeOf(myJunctionVarF)
             if(typeof obj=="object"){
-                var propertyNames = Object.getOwnPropertyNames(myJunctionVar)
-                for (var i in propertyNames) {origine[propertyNames[i]] = myJunctionVar[propertyNames[i]]; delete myJunctionVar[propertyNames[i]]}
-                Object.setPrototypeOf(myJunctionVar, obj)
+                var propertyNames = Object.getOwnPropertyNames(myJunctionVarF)
+                for (var i in propertyNames) {origine[propertyNames[i]] = myJunctionVarF[propertyNames[i]]; delete myJunctionVarF[propertyNames[i]]}
+                delete origine.prototype
+                delete origine.length
+                Object.setPrototypeOf(myJunctionVarF, obj)
                 return origine
                 }
             }
@@ -70,11 +72,5 @@
                                       end   code
                                         /   \     
 */
-// pour test:
-    if (!mu)var mu = {}
-    lib(mu)//active le module
-    lib(Object)//active append sur Object
-    var oneJunctionVar
-    var myJunctionVar
-    raw()//Raw, (exemple sur myJunctionVar non générique)
+
 

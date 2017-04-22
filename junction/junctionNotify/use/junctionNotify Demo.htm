@@ -5,74 +5,76 @@
 	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
 	<meta name="pml" content="junctionVar Demo" />
 
-	<title>junctionVar Demo</title>
-<script src="junctionVar.js" > </script>
+	<title>junctionNotify Demo</title>
+<script src="../junctionNotify.js" > </script>
 <script type="text/javascript">
 /*
                                       \   /
-                                   demo   junctionVar
+                                   demo   junctionNotify
                                       /   \     
 */
+// active lib apend et raw pour test:
+    if (!mu)var mu = {}
+    lib(mu)//active le module
+    lib(Object)//active append sur Object
+
+// init demo    
     var body = document.getElementsByTagName("body")[0]
     function testObj(data){this.test = data}
         testObj.prototype.test = "origine"  
         testObj.prototype.testT = "origineT"  
         testObj.prototype.test2 = "origine 2"
         testObj.prototype.functionTest = function (){console.log ("this: ",this); return this.test}
-//    append(); lib(); raw()
-//    demoRaw(console, body)//Raw, non automatisée, version la plus simple et rapide
-    demoLib(console, body)//Lib par function junctionVar 
-//    demoAppend(console, body)//Append sur Object => junctionVar (get)
+// lance les demos
+    demoLib(console, body)//Lib par function junctionNotify 
+    demoAppend(console, body)//Append sur Object => junctionNotify (get)
 /*
                                       \   /
                                    algo   demo
                                       /   \     
 */
-      
-function algoDemo(console, body, oneJunctionVar, secondJunctionVar){
-    var b = oneJunctionVar, c=oneJunctionVar
+function algoDemo(console, body, oneJunction, secondJunction){
+    var b = oneJunction, c=oneJunction
     var t =new testObj("test t ")
     b(t)//initialise contenu var de junction
-console.log ( oneJunctionVar.test, b.test, c.test, t.test, b.testT)
+console.log ( oneJunction.test, b.test, c.test, t.test, b.testT)
     b.test = "masque b"//masque prototype test 
-console.log (oneJunctionVar.test, b.test, c.test, t.test, b.testT)
+console.log (oneJunction.test, b.test, c.test, t.test, b.testT)
     t.test = "masque t"//masque prototype test 
     t.testT = "masqueT"
-console.log ( oneJunctionVar.test, b.test, c.test, t.test, b.testT)
-    delete oneJunctionVar.test //démasque test, reste propriété propre d'obj par t.test
-console.log ( oneJunctionVar.test, b.test, c.test, t.test, b.testT)
+console.log ( oneJunction.test, b.test, c.test, t.test, b.testT)
+    delete oneJunction.test //démasque test, reste propriété propre d'obj par t.test
+console.log ( oneJunction.test, b.test, c.test, t.test, b.testT)
     b.test = "masque b"//masque prototype test 
-console.log (oneJunctionVar.test, b.test, c.test, t.test, b.testT)
+console.log (oneJunction.test, b.test, c.test, t.test, b.testT)
     c("")//test clear propriétés propres junction
-console.log (oneJunctionVar.test, b.test, c.test, t.test, b.testT)
+console.log (oneJunction.test, b.test, c.test, t.test, b.testT)
 console.log (b.functionTest())
 console.log ("t: ",t)
     b.test = "apply b"//masque prototype test 
-    c(true)//test apply propriétés propres sur obj d'origine ici t
-console.log ("t: ",t)
 //    c (new testObj("test c "))//change contenu var de junction
-    c ({})//change contenu var de junction
-console.log (oneJunctionVar.test, b.test, c.test, t.test, b.testT)
+    c ({})//change contenu var de junction et test apply propriétés propres sur obj d'origine ici t
+console.log ("t: ",t)//test apply propriétés propres sur obj d'origine ici t
+console.log (oneJunction.test, b.test, c.test, t.test, b.testT)
     b.test = "conserve"//test conservation 
-console.log ( oneJunctionVar.test, b.test, c.test, t.test)
-    c ({},true)//change contenu var de junction avec conservation propriétés propres
-console.log ("t: ",t)//t non affecté
-console.log (oneJunctionVar.test, b.test, c.test, t.test)
-    delete oneJunctionVar.test //démasque test
-console.log ( oneJunctionVar.test, b.test, c.test, t.test)
+console.log ( oneJunction.test, b.test, c.test, t.test)
+    c ({},true)//change contenu var de junction sans conservation propriétés propres et maj
+console.log ("t: ",t)//t non affecté pas de conserve sur test de t
 
-    oneJunctionVar ({test:"test"})
-    var b = oneJunctionVar, c=oneJunctionVar
-console.log (oneJunctionVar.test, b.test, c.test)
-    oneJunctionVar ({test:"test B "})
-console.log (oneJunctionVar.test, b.test, c.test)
+    oneJunction ({test:"test"})
+    var b = oneJunction, c=oneJunction
+console.log (oneJunction.test, b.test, c.test)
+    oneJunction ({test:"test B "})
+console.log (oneJunction.test, b.test, c.test)
 
 //limite: ne marche que avec des type Object
-    oneJunctionVar (new String("test"))
-    var b = oneJunctionVar, c=oneJunctionVar
-console.log (oneJunctionVar, b, c)
+    oneJunction (new String("test"))
+    var b = oneJunction, c=oneJunction
+console.log (oneJunction, b, c)
+console.log (oneJunction.__proto__, b.__proto__, c.__proto__)//le String est sur __proto__
     b (new String("test B "))
-console.log (oneJunctionVar, b, c)
+console.log (oneJunction, b, c)
+console.log (oneJunction.__proto__, b.__proto__, c.__proto__)//le String est sur __proto__
     }
 /*
                                       \   /
@@ -83,11 +85,11 @@ function demoAppend(console, body){
 console.log("demoAppend")
 //écritiure
     var unObjet = new testObj("test")
-    var a = unObjet.junctionVar
+    var a = unObjet.junctionNotifyF
     // autre écriture
-    var a = new testObj("test").junctionVar
+    var a = new testObj("test").junctionNotifyF
     // autre écriture
-    var a =  Object.junctionVar (new testObj("test"))
+    var a =  Object.junctionNotifyF (new testObj("test"))
 //test    
     algoDemo(console, body, a)
 console.log("fin demoAppend")
@@ -100,32 +102,20 @@ console.log("fin demoAppend")
 function demoLib(console, body){
 console.log("demoLib")
 //écritiure
-    var a = mu.junctionVar()
+    var a = mu.junctionNotifyF()
     a (new testObj("test"))
     //autre écriture
-    var a = mu.junctionVar(new testObj("test"))
+    var a = mu.junctionNotifyF(new testObj("test"))
 //test
     algoDemo(console, body, a)
 console.log("fin demoLib")
-}
-/*
-                                      \   /
-                                    raw   demo
-                                      /   \     
-*/
-function demoRaw(console, body){
-console.log("demoRaw")
-//déja écrit
-//test
-    algoDemo(console, body, junctionVar)
-console.log("fin demoRaw")
 }
 </script>
 </head>
 <body>
 <pre>
                                       \   /
-                                   démo   junctionVar
+                                   démo   junctionNotify
                                       /   \     
 --algo:
 </pre>
