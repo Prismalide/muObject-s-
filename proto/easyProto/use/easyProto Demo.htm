@@ -1,0 +1,183 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+	<meta name="pml" content="mu proto easyProto Demo" />
+
+	<title>easyProto Demo</title>
+    <script src="../easyProto.js" > </script>
+<script type="text/javascript" >
+    if (!mu)var mu = {}
+    lib(mu)//active le module
+//*///
+//                                       \   /
+//testPatchObject                       => T <=
+//*///
+function testLib(){//utilisation lib mu.privateInit()
+    var myObject = (function (){//closure autoexec sorte d'initialisateur de class //speudo class
+        var _ //key 
+    //constructeurs émulé par une fonction init (peut-être absente):
+        function instanceInit(data1,data2){//appelé par un call. Après pass il y a un maximum de 5 arguments (pour l'instant) passés lors du new en exemple ici: data1 data2
+            //TODO: accès espaces public avec this et private avec this(_)  
+            console.log ("constructeur",data1,data2)
+            }
+    
+    //prototypes publish accès public avec this et private avec this(_)
+    //prototypes priva accès private avec this et public avec this(_)
+        var publish = {}, priva = {}
+        
+        //Prototype private (idem var maVar =  ... dans constructeur): accès espaces: private=>this  public=>this()
+        priva.memberPrivate = "test_private"
+        priva.functionPrivate = function(){console.log("PRIVATE ",this().memberPublic,this.memberPrivate)}
+        priva.memberChange = function(){this().memberPublic="change_privPBL",this.memberPrivate="change_privPVT"}
+        //Prototype methodes publish public (idem ex this.maProperty dans constructeur): accès espaces: public et publish=>this, private=>this(_) 
+        publish.functionPublished = function(){console.log("PUBLISHED ",this.memberPublic,this(_).memberPrivate);this(_).functionPrivate()}
+        publish.memberChangePublished = function(){this.memberPublic="change_publish"}
+        publish.memberChangePrivate = function(){this(_).memberChange()}
+    //variables static publish public après prototype publish et private
+        var scp = mu.privateObjects(publish, priva, instanceInit)
+        _ = instanceInit.key
+        return scp
+        })()
+
+    //Prototype public dynamiques externe, utilisation normale de prototype (aucun accès à l'espace private)
+    myObject.prototype.memberPublic = "test_public"
+    myObject.prototype.functionPublic = function(){console.log ("PUBLIC ", this.memberPublic);this.functionPublished()}
+    myObject.prototype.memberChangePublic = function(){this.memberChangePublished()}  
+
+    //Test
+    var test = new myObject("test data constructeur", "data 2")
+    test.functionPublic()
+    test.memberChangePublic()
+    test.functionPublic()
+    test.memberChangePrivate()
+    test.functionPublic()
+    console.log (test)
+    console.log ("fin test version patch mu.privateObjects()")
+    
+    }
+
+//*///
+//                                       \   /
+//testStatic                            => T <=
+//*///
+//                                       \   /
+function testStatic(){
+    //clôture pseudos Class privateObject:
+    MonTest = MonTest()
+    //test:
+    var monInstance = new MonTest()
+    monInstance.nbrInstances = 0//test séparation des nameSpace
+    var monInstance2 = new MonTest()
+    console.log ("log 1",MonTest.nbrInstances,monInstance,monInstance2,MonTest)
+    console.log ("log 2", monInstance.getNbrInstancesPub())
+    console.log ("log 3", monInstance.getNbrInstancesPubScp())
+//                                       \   /
+//monTest                               => c <=
+//*///
+    function MonTest(){var _ ;//pass//important
+    //variable static public
+        var className = "monTest"
+        var nbrInstances = 0
+    //init
+        function init(key){
+            nbrInstances++            
+            }
+    // variables publish(public) private
+        var publish = {}, priva = {}//important 
+        publish.getNbrInstancesPub = function (){this(_).getNbrInstancesPvt();return nbrInstances}
+        priva.getNbrInstancesPvt = function (){console.log("getNbrInstancesPvt",nbrInstances)}
+        publish.getNbrInstancesPubScp = function (){this(_).getNbrInstancesPvtScp();return this().nbrInstances}
+        priva.getNbrInstancesPvtScp = function (){console.log("getNbrInstancesPvtScp",this().nbrInstances)}
+    //variables static publish public après prototype publish et private
+        var scp = mu.privateObjects(publish, priva, init);
+        _ = init.key;//important: après mu.privateInit le init function reçoit le pass en propriété
+        //le pass possède une facilité d'écriture pour defineProperty
+        Object.defineProperty(scp, "nbrInstances", {get : function(){return nbrInstances}})
+        //scp.nbrInstances =
+        return scp//important
+        }
+    }
+    
+//*///
+//                                       \   /
+//testExtends                           => T <=
+//*///
+function testExtends(){
+    //clôture pseudo Class privateObject:
+    Tetragon = Tetragon(); Rectangle = Rectangle(); Square = Square(); Volume = Volume();
+    //test:
+        
+//                                       \   /
+//Utilis                                => U <=
+//*///
+    function area() {return this.hauteur * this.largeur;}
+//                                       \   /
+//Prototype                             => P <=
+//*///
+    function Point (x,y){this.x = x; this.y = y;}
+//                                       \   /
+//Tetragon                              => c <=
+//*///
+    function Tetragon () {var _ ;//pass
+        function init(pass,data1,data2){_ = pass;
+            }
+        var publish = {}, priva = {}
+
+        priva.name = 'Polygone';
+        this.height = height;
+        priva.width = width;
+        return mu.privateInit(publish, priva, init)
+        }
+//                                       \   /
+//Rectangle                             => c <=
+//*///
+    function Rectangle(height, width){var _ ;//pass
+        function init(pass,data1,data2){_ = pass;
+            }
+        var publish = {}, priva = {}
+        
+        return mu.privateInit(publish, priva, init)
+        }
+//                                       \   /
+//Square                                => c <=
+//*///
+    function Square (){var _ ;//pass
+        function init(pass,data1,data2){_ = pass;
+            }
+        var publish = {}, priva = {}
+
+//        constructor(longueur) {
+        // Ici, on appelle le constructeur de Polygone
+        // qui est l'objet « parent » de Carré
+//        super(longueur, longueur);
+        // Pour les classes dérivées, super() doit être appelé
+        // avant d'utiliser 'this' sinon cela entraînera une 
+        // exception ReferenceError.
+        this.name = 'Carré';
+        return mu.privateInit(publish, priva, init)
+        }
+//                                       \   /
+//Volume                                => c <=
+//*///
+    function Volume() {var _ ;//pass
+        function init(pass,data1,data2){_ = pass;
+            }
+        var publish = {}, priva = {}
+        
+        return mu.privateInit(publish, priva, init)
+        }
+    }
+//*///
+
+</script>
+</head>
+<body>
+    
+<pre>
+
+    A venir...
+</pre>
+<span id="dpmlId"></span>
+</body>
+</html>

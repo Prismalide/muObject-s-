@@ -1,0 +1,627 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+	<meta name="pml" content="mu proto easyProto Test" />
+
+	<title>easyProto Test</title>
+    <script src="../easyProto.js" > </script>
+<script type="text/javascript" >
+/*
+                                        \   /
+                                      lib   test
+                                        /   \     
+*/
+function testLib(){//utilisation lib mu.easyProto()
+/****\\\                                     
+/* demo----écriture----|
+/****///                            
+    var myProto = mu.easyProto(
+        function ( _ ){
+            with ( _ ){
+            constructor_ = function instancePrivaInit(data1,data2){ //this=>private this()=>public
+                console.validate ("constructeur_private ",data1,data2)
+                }
+            static_. public_. enumMembers = function enumMembers(obj){
+                var members=[]
+                for (member in obj){
+                    members.push( member + ((typeof obj[member]=="function")
+                        ?(" => "+obj[member].name)+"()"
+                        :(typeof obj[member]=="object")
+                            ?(" => "+obj[member].constructor.name)+"()"
+                            :" : "+obj[member]) )
+                    }
+                members.sort()    
+                console.validate.apply({},members)
+                }
+            private_. memberPrivate = "accès_private"
+            private_. espacesPrivate = function espacesPrivate(){
+                console.validate("PRIVATE ", this.memberPublic, this.memberPublished, this.memberPrivate)}
+            private_. memberChange = function memberChange(){this().memberPublic="change_privPBL",this.memberPrivate="change_privPVT"}
+            private_. enumMembersPriva = function enumMembersPriva(){static_. public_. enumMembers( static_. public_ ); static_. public_. enumMembers(this());
+                                         static_. public_. enumMembers( static_. private_ ); static_. public_. enumMembers(this);  static_. public_. enumMembers(_(this))}
+            public_. espacesPublished = function espacesPublished(){
+                console.validate("PUBLISH ", this.memberPublic, this.memberPublished, _(this).memberPrivate);
+                _(this).espacesPrivate()}
+            public_. memberChangePublished = function memberChangePublished(){this.memberPublic="change_publish"}
+            public_. memberChangePrivate = function memberChangePrivate(){_(this).memberChange()}
+            public_. memberPublished = "accès_published"
+            public_. enumMembersPrivate = function enumMembersPrivate(){_(this).enumMembersPriva()}
+            public_. enumMembersP = function enumMembersP(){static_. public_. enumMembers(static_. public_); static_. public_. enumMembers(this); static_. public_. enumMembers(this());
+                                         static_. public_. enumMembers(static_. private_); static_. public_. enumMembers(_(this))}
+            }
+        })
+    myProto.prototype.memberPublic = "accès_public"
+    myProto.prototype.espaces = function espaces(){
+        console.validate ("PUBLIC  ", this.memberPublic, this.memberPublished, this.memberPrivate);
+        this.espacesPublished()}
+/****\\\                                     
+/* test----validation----|
+/****///                            
+    var patch = {} // test functionObject
+    
+    console.control("data_constructor",
+        ["constructeur_private ","test_data1_constructeur", "data2"])
+        var test = new myProto("test_data1_constructeur", "data2")
+    patch.test = test
+    console.control("test accès espaces public, published et private",
+        ["PUBLIC  ","accès_public","accès_published",undefined],
+        ["PUBLISH ","accès_public","accès_published","accès_private"],
+        ["PRIVATE ",undefined,undefined,"accès_private"]
+        )
+        patch.test.espaces()
+    patch.test.memberPublic = "change public"
+    console.control("test ecriture depuis public",
+        ["PUBLIC  ","change public","accès_published",undefined],
+        ["PUBLISH ","change public","accès_published","accès_private"],
+        ["PRIVATE ",undefined,undefined,"accès_private"])
+        test.espaces()
+    patch.test.memberChangePrivate()
+    console.control("test ecriture depuis private",
+        ["PUBLIC  ","change_privPBL","accès_published",undefined],
+        ["PUBLISH ","change_privPBL","accès_published","change_privPVT"],
+        ["PRIVATE ",undefined,undefined,"change_privPVT"])
+        test.espaces()
+    var validePublic = ["enumMembersP => enumMembersP()",
+        "enumMembersPrivate => enumMembersPrivate()",
+        "espaces => espaces()",
+        "espacesPublished => espacesPublished()",
+        "memberChangePrivate => memberChangePrivate()",
+        "memberChangePublished => memberChangePublished()",
+        "memberPublic : change_privPBL",
+        "memberPublished : accès_published"    
+        ].sort()
+    var validePrivate = [ "memberPrivate : change_privPVT",
+        "enumMembersPriva => enumMembersPriva()",
+        "espacesPrivate => espacesPrivate()",
+        "memberChange => memberChange()"
+//        ].concat(validePublic).sort()
+        ].sort()
+    var valideStaticPublic = ["enumMembers => enumMembers()"].sort()
+    var valideStaticPrivate = ["actualThisPrivate => thisPrivate()","public_ => EasyProto()","private_ => static_Privates()"].sort()
+    console.control("test content espaces depuis public(this)", valideStaticPublic, validePublic, validePublic, valideStaticPrivate, validePrivate)
+        test.enumMembersP()
+    console.control("test content espaces depuis private(this) ", valideStaticPublic, validePublic, valideStaticPrivate, validePrivate, validePrivate)
+        test.enumMembersPrivate()
+    console.control ("end","fin testLib()")
+    }
+
+/*
+                                        \   /
+                                    multi   test
+                                        /   \     
+*/
+function testMultiInstance(){
+/****\\\                                     
+/* demo----écriture----|
+/****///                            
+    var Personne = mu.easyProto(
+        function ( _ ){
+            with ( _ ){
+            constructor_ = function instancePrivateInit(nom){//appelé par constructeur, this est l'espace private
+                _.nbrInstances++
+                this.nom = nom            
+                this.amis = [] // instanceof Personne
+                }
+            static_. private_. nbrInstances= 0
+            public_. nom = function (){return _(this).nom}//espace public et private indépendant
+            public_. addAmis = function (personne){_(this).amis.push(personne) }
+            public_. presentation = function(){
+                var nbrAmis = _(this).amis.length
+                console.validate ("mon nom est "+ _(this).nom, "j'ai:")
+                for (var i = 0; nbrAmis>i; i++ ){console.validate (_(this).amis[i].nom())} // redirection instanceof Personne
+                console.validate ("dans mes "+ _(this).amis.length+" amis déclaré(s) sur "+_.nbrInstances+" personnes")
+                } 
+            }
+        })
+/****\\\                                     
+/* test----validation----|
+/****///                            
+    var a = new Personne("moi-a")
+    var b = new Personne("moi-b")
+    var c = new Personne("moi-c")
+    var d = new Personne("moi-d")
+    a.addAmis(b)
+    a.addAmis(c)
+    a.addAmis(d)
+    b.addAmis(a)
+    console.control("test nbrInstances static private non visible :",
+    [undefined,undefined,undefined])
+    console.validate(Personne.nbrInstances, a.nbrInstances, d.nbrInstances)
+    console.control("instance a",
+    ["mon nom est moi-a","j'ai:"],
+    ["moi-b"],
+    ["moi-c"],
+    ["moi-d"],
+    ["dans mes 3 amis déclaré(s) sur 4 personnes"])
+    a.presentation()
+    console.control("instance b",
+    ["mon nom est moi-b","j'ai:"],
+    ["moi-a"],
+    ["dans mes 1 amis déclaré(s) sur 4 personnes"])
+    b.presentation()
+    console.control("instance c",
+    ["mon nom est moi-c","j'ai:"],
+    ["dans mes 0 amis déclaré(s) sur 4 personnes"])
+    c.presentation()
+    console.control("instance d",
+    ["mon nom est moi-d","j'ai:"],
+    ["dans mes 0 amis déclaré(s) sur 4 personnes"])
+    d.presentation()
+
+    console.control ("end","fin testMultiInstance()")
+    }
+/*
+                                        \   /
+                                   static   test
+                                        /   \     
+*/
+function testStatic(){
+/****\\\                                     
+/* demo----écriture----sans----with----pour----"use strict"----|
+/****///                            
+    var MonTest = mu.easyProto(
+        function ( __ ){var _ = __._, static_ = __.static_, public_ = __.public_, private_ = __.private_;
+            __.constructor_ = function instancePrivaInit(nom){//appelé par constructeur private
+                static_. private_. nbrInstances++            
+                this().nom = nom
+                this.nomPrivate = nom
+                }
+            static_. private_. protoName = "monTest"
+            static_. private_. nbrInstances = 0
+    
+            private_. getNbrInstancesPvt = function (){console.validate("getNbrInstancesPvt",static_. private_. nbrInstances)}
+            private_. getNbrInstancesPvtScp = function (){console.validate("getNbrInstancesPvtScp",this.nbrInstances,this().nbrInstances)}
+    
+            public_. getNbrInstancesPubScp = function (){_(this).getNbrInstancesPvtScp(); return this.nbrInstances}//test séparation des nameSpace
+            public_. getNbrInstancesPub = function (){ _(this).getNbrInstancesPvt(); return static_. public_. nbrInstances}
+            public_. enumMembersP = function enumMembersP(){
+                this.test = this.nom
+                static_. public_. enumMembers(static_. public_); static_. public_. enumMembers(this()); static_. public_. enumMembers(this);
+                static_. public_. enumMembers(static_. private_); static_. public_. enumMembers(_(this))
+                }
+            static_. public_. enumMembers = function enumMembers(obj){
+                var members=[]
+                for (member in obj){
+                    members.push( member + ((typeof obj[member]=="function")
+                        ?(" => "+obj[member].name)+"()"
+                        :(typeof obj[member]=="object")
+                            ?(" => "+obj[member].constructor.name)+"()"
+                            :" : "+obj[member]) )
+                    }
+                members.sort()    
+                console.validate.apply({},members)
+                }
+            Object.defineProperty(static_. public_, "nbrInstances",{get : function(){return static_. private_. nbrInstances}})
+            }
+        )
+/****\\\                                     
+/* test----validation----|
+/****///                            
+    var monInstance = new MonTest("test 1")
+    monInstance.nbrInstances = 10//test séparation des nameSpace public instance et static private et public
+    var monInstance2 = new MonTest("test 2")
+    var monInstance3 = new MonTest("test 3")
+    monInstance3.nbrInstances = 30//test séparation des nameSpace public instance et static private et public
+    console.control("MonTest.nbrInstances getter","3")//TODO: test nombre
+        console.validate (MonTest.nbrInstances)
+    console.control("monInstance.getNbrInstancesPub()",["getNbrInstancesPvt",3],[3])
+        console.validate ( monInstance.getNbrInstancesPub())
+    console.control("monInstance.getNbrInstancesPubScp()",["getNbrInstancesPvtScp",undefined,10],[10])
+        console.validate ( monInstance.getNbrInstancesPubScp())
+    console.control("monInstance2.getNbrInstancesPubScp()",["getNbrInstancesPvtScp",undefined,undefined],[undefined])
+        console.validate ( monInstance2.getNbrInstancesPubScp())
+    console.control("MonTest.nbrInstances teste setter absent","3")
+        MonTest.nbrInstances = 0//setter impossible ou absence de setter
+        console.validate (MonTest.nbrInstances)
+    console.control("enum espaces monInstance",
+        ["enumMembers => enumMembers()"],
+        ["enumMembersP => enumMembersP()","getNbrInstancesPub => ()","getNbrInstancesPubScp => ()","nbrInstances : 10", "nom : test 1","test : test 1"].sort(),//nbrInstances: propriété d'instance
+        ["enumMembersP => enumMembersP()","getNbrInstancesPub => ()","getNbrInstancesPubScp => ()","nbrInstances : 10", "nom : test 1","test : test 1"].sort(),//nbrInstances: propriété d'instance
+        ["actualThisPrivate => thisPrivate()","nbrInstances : 3","protoName : monTest","public_ => EasyProto()","private_ => static_Privates()"].sort(),
+        ["getNbrInstancesPvt => ()","getNbrInstancesPvtScp => ()","nomPrivate : test 1"].sort(),
+        [undefined]
+        )
+        console.validate (monInstance.enumMembersP())
+    console.control("enum espaces monInstance2",
+        ["enumMembers => enumMembers()"],
+        ["enumMembersP => enumMembersP()","getNbrInstancesPub => ()","getNbrInstancesPubScp => ()", "nom : test 2","test : test 2"].sort(),
+        ["enumMembersP => enumMembersP()","getNbrInstancesPub => ()","getNbrInstancesPubScp => ()", "nom : test 2","test : test 2"].sort(),
+        ["actualThisPrivate => thisPrivate()","nbrInstances : 3","protoName : monTest","public_ => EasyProto()","private_ => static_Privates()"].sort(),
+        ["getNbrInstancesPvt => ()","getNbrInstancesPvtScp => ()","nomPrivate : test 2"].sort(),
+        [undefined]
+        )
+        console.validate (monInstance2.enumMembersP())
+    console.control ("end","fin testStatic()")
+    }
+/*
+                                        \   /
+                                  extends   test
+                                        /   \     
+*/
+function testExtends(){//demo mélange easyProto et prototype standard
+/****\\\                                     
+/* demo----écriture----|
+/****///                            
+
+    /// TopProto --- easyProto --- prototype ---->
+    var TopProto = mu.easyProto("TopProto")(//héritage sans logique juste pour test
+        function ( _ ){
+            with ( _ ){
+            static_. private_. nbrInstance = 0
+            constructor_ = function( ){
+                this.suiteId =  ++static_. private_. nbrInstance
+                }
+            private_. libId = "topProtoId:"
+//            public_. getTopProto = function(){return _(this).libId + _(this).suiteId + " sur " + static_. private_. nbrInstance +" instances"}}
+            Object.defineProperty(
+                public_ , "getTopProto",{get : function(){return _(this).libId + _(this).suiteId + " sur " + static_. private_. nbrInstance +" instances"}})
+            }
+        })
+
+    /// EnumMembers --- prototype --- standard ---->
+    function EnumMembers (){
+        return TopProto.call(this)//note:return pour héritage easyProto vers standard prototype
+        }
+    EnumMembers.prototype = Object.create(TopProto.prototype)// mieux que new (TopProto) qui passe par le constructeur de TopProto
+    Object.defineProperty( EnumMembers.prototype, "constructor", { value : EnumMembers } )
+    EnumMembers.prototype.enumMembers = function(obj){
+        var members=[]
+        for (member in obj){
+            members.push( member + ((typeof obj[member]=="function")
+                ?(" => "+obj[member].name)+"()" :(typeof obj[member]=="object")
+                    ?(" => "+obj[member].constructor.name)+"()" :" : "+obj[member]) )}
+        members.sort()
+        console.validate.apply({},members)
+        }
+
+    /// Position --- easyProto --- prototype ---->
+    var Position = mu.easyProto("Position"). extends_( EnumMembers )(//héritage sans logique juste pour test
+        function ( _ ){
+            with ( _ ){
+            constructor_ = function( X,Y ){
+                this.X = X
+                this.Y = Y
+                return super_()
+                }
+            var deplacer = (function(){return function (x,y){_(this).X += x; _(this).Y += y}})()
+            Object.defineProperties(
+            public_ ,{
+                x:{enumerable:true,get:function (){ return _(this).X}},
+                y:{enumerable:true,get:function (){ return _(this).Y}},
+                deplacer:{enumerable:true, value:function (x,y){_(this).X += x; _(this).Y += y}},
+/*                gauche:{enumerable:true, value:function (x,y){if (_(this).X += x; this).X += x}},
+                droite:{enumerable:true, value:function (x,y){_(this).X += x; this).X += x}},
+                bas:{enumerable:true, value:function (x,y){_(this).X += x; this).X += x}},
+                haut:{enumerable:true, value:function (x,y){_(this).X += x; this).X += x}}
+*/                })
+            }
+        })
+
+    /// Personnage --- easyProto --- prototype ---->
+//    var Personnage = mu.easyProto().extend( EnumMembers )(//héritage sans logique juste pour test
+    var Personnage = mu.easyProto("Personnage").
+            extends_( Position )(//héritage sans logique juste pour test
+        function ( _ ){
+            with ( _ ){
+            constructor_ = function test(posX, posY, nom, nbrVie, force, experience){
+                static_. private_. nbrPersonnageEnVie++            
+                this. nom = nom
+                this. nbrVie = nbrVie
+                this. force = force
+                this. experience = experience;
+                this. calcPuissance()
+                return super_(posX,posY)
+                }
+            static_. private_. nbrPersonnageEnVie = 0
+    
+            private_. calcPuissance = function (){ this.puissance = this.force*this.experience; return(this.puissance)}
+            private_. gagneBataille = function (){
+                console.validate(this.nom + " " + this.puissance + " gagne");
+//                this.force++
+                this.experience++
+                this.calcPuissance()
+                }
+            private_. perdreBataille = function (){
+                console.validate(this.nom + " " + this.puissance + " perd")
+//                if (this.force)this.force--
+                if (this.nbrVie)this.nbrVie--
+                this.calcPuissance()}
+            private_. bataille = function(adversaire){
+                var rep = (this.puissance > adversaire.puissance())//gagné
+                    ?true
+                    :(this.puissance < adversaire.puissance)//perdu
+                        ?false
+                        :Math.floor((1)*Math.random())//tirage au sort
+                if (rep){this.gagneBataille(); adversaire.perdreBataille; return rep}   
+                adversaire.gagneBataille
+                this.perdreBataille();
+                return rep
+                }
+            private_. bilan = function (){
+                console.validate( this. nom, this. nbrVie, this. force, this. experience, this. puissance)
+                }
+            public_. puissance = function (){return _(this).puissance}
+            public_. enumEspace = function (){this.enumMembers(this); this.enumMembers(_(this))}
+            Object. defineProperties(
+            public_, {
+                vies: {get:function (){return _(this).nbrVie}},
+                bataille: {enumerable:true, value: function ( adversaire ){return _(this). bataille( adversaire )}},
+                perdreBataille: {get:function (){ return _(this).perdreBataille()}},
+                gagneBataille: {get:function (){ return _(this).gagneBataille()}},
+                bilan: {get:function (){return _(this).bilan()}}
+                })
+            }
+        })
+
+    /// Guerrier --- prototype --- standard ---->
+    function Guerrier (posX, posY, nom, experience){
+        return Personnage.call(this,posX, posY, nom, 6, 2,experience)//note:return pour héritage easyProto vers standard prototype
+        }
+    Guerrier.prototype = Object.create(Personnage.prototype)// mieux que new (Personnage) qui passe par le constructeur de Personnage
+    Object.defineProperty( Guerrier.prototype, "constructor", { value : Guerrier } )
+    Guerrier.prototype.combattre = function (adversaire){
+        if (!adversaire.vies){this.perdreBataille()}//perd bataille avec un mort
+        this.bataille(adversaire)
+        }
+
+    /// Zombi --- prototype --- standard ---->
+    function Zombi (posX, posY, nom, experience){
+        return Personnage.call(this,posX, posY, nom, 3, 5, experience)//note:return pour héritage easyProto vers standard prototype
+        }
+    Zombi.prototype = Object.create(Personnage.prototype)// mieux que new (Personnage) qui passe par le constructeur de Personnage
+    Object.defineProperty( Zombi.prototype, "constructor", { value : Zombi } )
+    Zombi.prototype.combattre = function (adversaire){
+        if (!adversaire.vies){this.gagneBataille}//gagne bataille avec un mort
+        this.bataille(adversaire)
+        }
+
+    /// BottomProto--- easyProto --- prototype ---->
+    var BottomProto = mu.easyProto("BottomProto"). extends_(Zombi)(//héritage sans logique juste pour test
+        function ( _ ){
+            with ( _ ){
+            static_. private_. nbrInstance = 0
+            constructor_ = function(posX, posY, nom, experience){
+                this.suiteId =  ++static_. private_. nbrInstance
+                return super_(posX, posY, nom, experience)
+                }
+            private_. libId = "bottomProtoId:"
+//            public_. getTopProto = function(){return _(this).libId + _(this).suiteId + " sur " + static_. private_. nbrInstance +" instances"}}
+            Object.defineProperty(
+                public_ , "getBottomProto",{get : function(){return _(this).libId + _(this).suiteId + " sur " + static_. private_. nbrInstance +" instances"}})
+            }
+        })
+
+/****\\\                                     
+/* test----validation----|
+/****///                            
+    console.control("compatibilité héritage (trois extends) prototype-standard easyProto prototype-standard ")
+    var zombar = new Zombi(12, 13, "zombar",2)
+//    var zombig = new Zombi(14, 15, "zombig",7)
+    var zombig = new BottomProto(14, 15, "zombig",7)
+    var guerro = new Guerrier(22, 23, "guerro",3)
+    var bambin = new Guerrier(24, 25, "bambin",1)
+    console.control("bilans: nom nbrVie force experience puissance ",
+        [ "zombar", 3, 5, 2, 10], [ "guerro", 6, 2, 3, 6])
+        zombar.bilan; guerro.bilan
+    console.control("combat zombar guerro", "zombar 10 gagne", "guerro 6 perd")
+        zombar.combattre(guerro)
+    console.control("bilans: nom nbrVie force experience puissance ",
+        [ "zombar", 3, 5, 3, 15], [ "guerro", 5, 2, 3, 6], [ "bambin", 6, 2, 1, 2])
+        zombar.bilan; guerro.bilan; bambin.bilan
+    console.control("combat bambin guerro", "guerro 6 gagne", "bambin 2 perd")
+        bambin.combattre(guerro)
+    console.control("bilans: nom nbrVie force experience puissance ",
+        [ "zombig", 3, 5, 7, 35], [ "zombar", 3, 5, 3, 15], [ "guerro", 5, 2, 4, 8], [ "bambin", 5, 2, 1, 2])
+        zombig.bilan; zombar.bilan; guerro.bilan; bambin.bilan
+    console.control("enum public private guerro",
+        [ "deplacer => ()","x : 22","y : 23","bataille => ()","combattre => ()","enumEspace => ()","enumMembers => ()","puissance => ()"].sort(),
+        ["bataille => ()","bilan => ()","calcPuissance => ()","experience : 4",
+        "force : 2","gagneBataille => ()","nbrVie : 5","nom : guerro","perdreBataille => ()","puissance : 8"].sort()
+        )
+        guerro.enumEspace()
+    console.control("enum public private zombig",
+        [ "deplacer => ()","x : 14","y : 15","bataille => ()","combattre => ()","enumEspace => ()","enumMembers => ()","puissance => ()"].sort(),
+        ["bataille => ()","bilan => ()","calcPuissance => ()","experience : 7",
+        "force : 5","gagneBataille => ()","nbrVie : 3","nom : zombig","perdreBataille => ()","puissance : 35"].sort()
+        )
+        zombig.enumEspace()
+    console.control("test TopProto héritage","topProtoId:4 sur 4 instances","topProtoId:1 sur 4 instances")
+        console.validate (bambin.getTopProto)
+        console.validate (zombar.getTopProto)
+    console.control("test ajout dynamique de prototype public","dynamique prototype")
+        Personnage.prototype.testObjectCreat = "dynamique prototype"
+        console.validate (zombig.testObjectCreat)
+    console.control("test instanceof zombig", 
+        ["BottomProto true", "Zombi true", "Personnage true", "Position true", "EnumMembers true", "TopProto true"])
+        console.validate(
+            "BottomProto " + (zombig instanceof BottomProto), "Zombi " + (zombig instanceof Zombi),
+            "Personnage " + (zombig instanceof Personnage), "Position " + (zombig instanceof Position),
+            "EnumMembers " + (zombig instanceof EnumMembers), "TopProto " + (zombig instanceof TopProto) )
+    console.control("test instanceof zombar", 
+        ["BottomProto false", "Zombi true", "Personnage true", "Position true", "EnumMembers true", "TopProto true"])
+        console.validate(
+            "BottomProto " + (zombar instanceof BottomProto), "Zombi " + (zombar instanceof Zombi),
+            "Personnage " + (zombar instanceof Personnage), "Position " + (zombar instanceof Position),
+            "EnumMembers " + (zombar instanceof EnumMembers), "TopProto " + (zombar instanceof TopProto) )
+    console.control("test constructeur zombig zombar", 
+        ["EasyProto", "Zombi"])
+        console.validate( zombig.constructor.name, zombar.constructor.name )
+
+    console.control ("end","fin compatibilité héritage (trois extends)")
+    console.control ("end","le mix ne peut être plus complexe pour l'instant, réfléchir à une généralisation return call constructeur")
+//    console.control ("end","fin testExtends()")
+    }
+
+//*///
+
+</script>
+</head>
+<body>
+<pre>
+Attention: certain navigateur n'implémente pas la propriété name d'une fonction
+    ce qui génère de fausses erreurs => undefined
+    de même certain renvoie => value() pour des function déclarées par defineProperties 
+<a href="javascript:editTest('testLib',this)" >Test mu.easyProto()</a><br />
+<a href="javascript:editTest('testMultiInstance')" >Test multiInstance</a><br />
+<a href="javascript:editTest('testStatic')" >Test static</a><br />
+<a href="javascript:editTest('testExtends')" >Test héritage mix Protos prototypes </a><br />
+</pre>
+
+
+<!--No changes on this comment!   
+                                      \   /
+                                 common   projects (the following is generated)
+                                      /   \     
+-->
+<pre id="editTest" ></pre>
+<div id="editPopUp">
+    <h4 onclick="this.parentNode.style.display='none'"> Edit Control </h4>
+    <pre id="editControl" ></pre>
+</div>
+<style type="text/css">
+    .infoTitre {background-color: #D7620A;color:white;}
+    .endTest {background-color: #57220A;color:white;}
+    .errorNbr {color: white; background-color: #D7020A;}
+    .expected {
+        color: #EA2690;
+        background-color: white;
+        margin: 5px;
+        }
+    .separate {color: black;}
+    .tooValideArgs  {background-color: white; margin: 5px;}
+    .tooControlArgs {background-color: white; margin: 5px;}
+    .tooValide  {background-color: white; margin: 5px;}
+    .tooControl {background-color: white; margin: 5px;}
+    #editPopUp {
+        position: fixed;
+        width: 100%;
+        height: 100%;
+        top: 0px;
+        text-align: center;
+        display: none;
+    }
+    
+    #editPopUp h4 {cursor: pointer; margin-left:5%; width: 90%; background-color: #FFF8DC;}
+    #editControl {
+        text-align: left;
+        background-color: #FFF8DC;
+        margin-left:5%;
+        width: 90%;
+        color: #0884a5;
+        overflow: auto;
+    }
+</style>
+<script type="text/javascript">
+    if (!console){var console = {}}
+    (function(which){
+        var dataControl = ""
+        var nbrValidate = 0
+        var actualValidates = 0
+        var tooValidate = false
+        var editControl = window.top.document.getElementById("editControl")
+        var nbrError = 0
+        which.control = function(){//arg1=>titre du contrôle, argSuivants=>réponses attendues
+            if (actualValidates<nbrValidate){
+                var validateEnTrop = ""
+                for (var i = ++actualValidates; i <= nbrValidate; i++){nbrError++;
+                    editControl.appendChild(document.createElement("br"))
+                    appendEditControl("span", "controle en trop, attendu : " + dataControl[i], "tooControl")
+                    }
+                }
+            if (nbrError>0) {
+                editControl.appendChild(document.createElement("br"))
+                appendEditControl("span", nbrError + " erreur(s)", "errorNbr")
+                }
+            nbrError = 0
+            if (arguments[0] == "end"){
+                nbrValidate = 0
+                actualValidates = 0//fin d'une série de controles
+                editControl.appendChild(document.createElement("br"))
+                appendEditControl("span", arguments[1] , "endTest")
+                return
+                }
+            dataControl = arguments
+            nbrValidate = arguments.length - 1
+            editControl.appendChild(document.createElement("br"))
+            appendEditControl("span", arguments[0], "infoTitre")
+            actualValidates = 0
+            }
+        which.stop = function(){
+            console.log(arguments)
+            throw new Error( "console.stop "  )
+            }
+        which.validate = function(){
+            editControl.appendChild(document.createElement("br"))
+            if (++actualValidates > nbrValidate){nbrError++;
+                var validateEnTrop = ""
+                for (var i = 0; i<arguments.length; i++){validateEnTrop += arguments[i]+" | "}
+                appendEditControl("span", "validate en trop, reçu : " + validateEnTrop, "tooValide")
+                return
+                }
+            if (typeof dataControl[actualValidates]== "string"){
+                if (dataControl[actualValidates] != arguments[0]){nbrError++;
+                    appendEditControl("span", arguments[0] + " ::attendu:: " + dataControl[actualValidates] , "expected")
+                }else  appendEditControl("span", arguments[0] , "infoOut")
+                return
+            }else {
+                for (var i = 0; i < dataControl[actualValidates].length;i++){
+                    if (dataControl[actualValidates][i] != arguments[i]){nbrError++;               
+                        appendEditControl("span", arguments[i] + " ::attendu:: " + dataControl[actualValidates][i] , "expected")
+                        continue
+                        }
+                    appendEditControl("span", arguments[i] , "infoOut")
+                    }
+                }
+            if (arguments.length > dataControl[actualValidates].length){nbrError++;
+                appendEditControl("span", "validate argument en trop : " , "tooValideArgs")
+                for (var i = dataControl[actualValidates].length; i < arguments.length;i++ ){appendEditControl("span", arguments[i], "tooValideArgs")}
+                return
+                }
+            if (arguments.length < dataControl[actualValidates].length){nbrError++;
+                appendEditControl("span", "controle argument en trop : " , "tooControlArgs")
+                for (var i = arguments.length; i < dataControl[actualValidates].length; i++ ){appendEditControl("span", dataControl[actualValidates][i], "tooValideArgs")}
+                }
+            }
+        function appendEditControl(tagName, valueHTML, classTag){
+            var tagInfo = document.createElement(tagName)
+            tagInfo.className = classTag
+            tagInfo.innerHTML = " " + valueHTML + "<span class='separate'> | </span>"
+            editControl.appendChild(tagInfo) 
+            }
+        })(console)
+    function editTest(which){
+//        if (console.clear)console.clear()
+        var actualDoc = (window.top.document===document)?document:window.top.document
+        window.top.document.getElementById("editTest").innerHTML = this[which].toString()
+        var tmp = window.top.document.getElementById("editControl")
+        tmp.parentNode.style.display = "block"
+        tmp.innerHTML = ""
+        this[which]()
+        }
+        if (!mu){var mu = {}}
+        lib(mu)//active le module
+</script>
+<span id="dpmlId"></span>
+</body>
+</html>
