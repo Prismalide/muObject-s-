@@ -5,35 +5,25 @@
 	<meta name="pml" content="mu proto easyProto Test" />
 
 	<title>easyProto Test</title>
-    <script src="../easyProto.js" > </script>
 <script type="text/javascript" >
 /*
                                         \   /
                                       lib   test
                                         /   \     
 */
-function testLib(){//utilisation lib mu.easyProto()
+function testLib(){//utilisation lib easyProto()
 /****\\\                                     
-/* demo----écriture----|
+/* demo----écriture----with----avec----"use strict"----|
 /****///                            
-    var myProto = mu.easyProto(
+    var myProto = easyProto(
         function ( _ ){
             with ( _ ){
+            (function(){ "use strict";
+try{"".a = "";console.log("test myProto","pas en mode strict")}catch(e){console.log("test myProto","mode strict actif")}
             constructor_ = function instancePrivaInit(data1,data2){ //this=>private this()=>public
                 console.validate ("constructeur_private ",data1,data2)
                 }
-            static_. public_. enumMembers = function enumMembers(obj){
-                var members=[]
-                for (member in obj){
-                    members.push( member + ((typeof obj[member]=="function")
-                        ?(" => "+obj[member].name)+"()"
-                        :(typeof obj[member]=="object")
-                            ?(" => "+obj[member].constructor.name)+"()"
-                            :" : "+obj[member]) )
-                    }
-                members.sort()    
-                console.validate.apply({},members)
-                }
+            static_. public_. enumMembers = console.validate.list
             private_. memberPrivate = "accès_private"
             private_. espacesPrivate = function espacesPrivate(){
                 console.validate("PRIVATE ", this.memberPublic, this.memberPublished, this.memberPrivate)}
@@ -49,6 +39,7 @@ function testLib(){//utilisation lib mu.easyProto()
             public_. enumMembersPrivate = function enumMembersPrivate(){_(this).enumMembersPriva()}
             public_. enumMembersP = function enumMembersP(){static_. public_. enumMembers(static_. public_); static_. public_. enumMembers(this); static_. public_. enumMembers(this());
                                          static_. public_. enumMembers(static_. private_); static_. public_. enumMembers(_(this))}
+            })()
             }
         })
     myProto.prototype.memberPublic = "accès_public"
@@ -59,7 +50,7 @@ function testLib(){//utilisation lib mu.easyProto()
 /* test----validation----|
 /****///                            
     var patch = {} // test functionObject
-    
+    console.control.start("testLib")
     console.control("data_constructor",
         ["constructeur_private ","test_data1_constructeur", "data2"])
         var test = new myProto("test_data1_constructeur", "data2")
@@ -97,13 +88,13 @@ function testLib(){//utilisation lib mu.easyProto()
         "memberChange => memberChange()"
 //        ].concat(validePublic).sort()
         ].sort()
-    var valideStaticPublic = ["enumMembers => enumMembers()"].sort()
+    var valideStaticPublic = ["enumMembers => ()"].sort()
     var valideStaticPrivate = ["actualThisPrivate => thisPrivate()","public_ => EasyProto()","private_ => static_Privates()"].sort()
     console.control("test content espaces depuis public(this)", valideStaticPublic, validePublic, validePublic, valideStaticPrivate, validePrivate)
         test.enumMembersP()
     console.control("test content espaces depuis private(this) ", valideStaticPublic, validePublic, valideStaticPrivate, validePrivate, validePrivate)
         test.enumMembersPrivate()
-    console.control ("end","fin testLib()")
+    console.control.end("fin testLib()")
     }
 
 /*
@@ -113,12 +104,12 @@ function testLib(){//utilisation lib mu.easyProto()
 */
 function testMultiInstance(){
 /****\\\                                     
-/* demo----écriture----|
+/* demo----écriture----ES6----par----décomposition----pour----"use strict"----|
 /****///                            
-    var Personne = mu.easyProto(
-        function ( _ ){
-            with ( _ ){
-            constructor_ = function instancePrivateInit(nom){//appelé par constructeur, this est l'espace private
+    var Personne = easyProto(
+        function ( self_ ){
+            var { static_, public_, private_, super_, _} = self_
+            self_. constructor_ = function instancePrivateInit(nom){//appelé par constructeur, this est l'espace private
                 _.nbrInstances++
                 this.nom = nom            
                 this.amis = [] // instanceof Personne
@@ -132,7 +123,6 @@ function testMultiInstance(){
                 for (var i = 0; nbrAmis>i; i++ ){console.validate (_(this).amis[i].nom())} // redirection instanceof Personne
                 console.validate ("dans mes "+ _(this).amis.length+" amis déclaré(s) sur "+_.nbrInstances+" personnes")
                 } 
-            }
         })
 /****\\\                                     
 /* test----validation----|
@@ -145,6 +135,7 @@ function testMultiInstance(){
     a.addAmis(c)
     a.addAmis(d)
     b.addAmis(a)
+    console.control.start("testMultiInstance")
     console.control("test nbrInstances static private non visible :",
     [undefined,undefined,undefined])
     console.validate(Personne.nbrInstances, a.nbrInstances, d.nbrInstances)
@@ -169,7 +160,7 @@ function testMultiInstance(){
     ["dans mes 0 amis déclaré(s) sur 4 personnes"])
     d.presentation()
 
-    console.control ("end","fin testMultiInstance()")
+    console.control.end("fin testMultiInstance()")
     }
 /*
                                         \   /
@@ -180,8 +171,8 @@ function testStatic(){
 /****\\\                                     
 /* demo----écriture----sans----with----pour----"use strict"----|
 /****///                            
-    var MonTest = mu.easyProto(
-        function ( __ ){var _ = __._, static_ = __.static_, public_ = __.public_, private_ = __.private_;
+    var MonTest = easyProto(
+        function ( __ ){var static_ = __.static_, public_ = __.public_, private_ = __.private_, _ = __._;
             __.constructor_ = function instancePrivaInit(nom){//appelé par constructeur private
                 static_. private_. nbrInstances++            
                 this().nom = nom
@@ -200,18 +191,7 @@ function testStatic(){
                 static_. public_. enumMembers(static_. public_); static_. public_. enumMembers(this()); static_. public_. enumMembers(this);
                 static_. public_. enumMembers(static_. private_); static_. public_. enumMembers(_(this))
                 }
-            static_. public_. enumMembers = function enumMembers(obj){
-                var members=[]
-                for (member in obj){
-                    members.push( member + ((typeof obj[member]=="function")
-                        ?(" => "+obj[member].name)+"()"
-                        :(typeof obj[member]=="object")
-                            ?(" => "+obj[member].constructor.name)+"()"
-                            :" : "+obj[member]) )
-                    }
-                members.sort()    
-                console.validate.apply({},members)
-                }
+            static_. public_. enumMembers = console.validate.list
             Object.defineProperty(static_. public_, "nbrInstances",{get : function(){return static_. private_. nbrInstances}})
             }
         )
@@ -223,6 +203,7 @@ function testStatic(){
     var monInstance2 = new MonTest("test 2")
     var monInstance3 = new MonTest("test 3")
     monInstance3.nbrInstances = 30//test séparation des nameSpace public instance et static private et public
+    console.control.start("testStatic")
     console.control("MonTest.nbrInstances getter","3")//TODO: test nombre
         console.validate (MonTest.nbrInstances)
     console.control("monInstance.getNbrInstancesPub()",["getNbrInstancesPvt",3],[3])
@@ -235,7 +216,7 @@ function testStatic(){
         MonTest.nbrInstances = 0//setter impossible ou absence de setter
         console.validate (MonTest.nbrInstances)
     console.control("enum espaces monInstance",
-        ["enumMembers => enumMembers()"],
+        ["enumMembers => ()"],
         ["enumMembersP => enumMembersP()","getNbrInstancesPub => ()","getNbrInstancesPubScp => ()","nbrInstances : 10", "nom : test 1","test : test 1"].sort(),//nbrInstances: propriété d'instance
         ["enumMembersP => enumMembersP()","getNbrInstancesPub => ()","getNbrInstancesPubScp => ()","nbrInstances : 10", "nom : test 1","test : test 1"].sort(),//nbrInstances: propriété d'instance
         ["actualThisPrivate => thisPrivate()","nbrInstances : 3","protoName : monTest","public_ => EasyProto()","private_ => static_Privates()"].sort(),
@@ -244,7 +225,7 @@ function testStatic(){
         )
         console.validate (monInstance.enumMembersP())
     console.control("enum espaces monInstance2",
-        ["enumMembers => enumMembers()"],
+        ["enumMembers => ()"],
         ["enumMembersP => enumMembersP()","getNbrInstancesPub => ()","getNbrInstancesPubScp => ()", "nom : test 2","test : test 2"].sort(),
         ["enumMembersP => enumMembersP()","getNbrInstancesPub => ()","getNbrInstancesPubScp => ()", "nom : test 2","test : test 2"].sort(),
         ["actualThisPrivate => thisPrivate()","nbrInstances : 3","protoName : monTest","public_ => EasyProto()","private_ => static_Privates()"].sort(),
@@ -252,7 +233,7 @@ function testStatic(){
         [undefined]
         )
         console.validate (monInstance2.enumMembersP())
-    console.control ("end","fin testStatic()")
+    console.control.end("fin testStatic()")
     }
 /*
                                         \   /
@@ -265,7 +246,7 @@ function testExtends(){//demo mélange easyProto et prototype standard
 /****///                            
 
     /// TopProto --- easyProto --- prototype ---->
-    var TopProto = mu.easyProto("TopProto")(//héritage sans logique juste pour test
+    var TopProto = easyProto("TopProto")(//héritage sans logique juste pour test
         function ( _ ){
             with ( _ ){
             static_. private_. nbrInstance = 0
@@ -285,18 +266,10 @@ function testExtends(){//demo mélange easyProto et prototype standard
         }
     EnumMembers.prototype = Object.create(TopProto.prototype)// mieux que new (TopProto) qui passe par le constructeur de TopProto
     Object.defineProperty( EnumMembers.prototype, "constructor", { value : EnumMembers } )
-    EnumMembers.prototype.enumMembers = function(obj){
-        var members=[]
-        for (member in obj){
-            members.push( member + ((typeof obj[member]=="function")
-                ?(" => "+obj[member].name)+"()" :(typeof obj[member]=="object")
-                    ?(" => "+obj[member].constructor.name)+"()" :" : "+obj[member]) )}
-        members.sort()
-        console.validate.apply({},members)
-        }
+    EnumMembers.prototype.enumMembers = console.validate.list
 
     /// Position --- easyProto --- prototype ---->
-    var Position = mu.easyProto("Position"). extends_( EnumMembers )(//héritage sans logique juste pour test
+    var Position = easyProto("Position"). extends_( EnumMembers )(//héritage sans logique juste pour test
         function ( _ ){
             with ( _ ){
             constructor_ = function( X,Y ){
@@ -319,8 +292,8 @@ function testExtends(){//demo mélange easyProto et prototype standard
         })
 
     /// Personnage --- easyProto --- prototype ---->
-//    var Personnage = mu.easyProto().extend( EnumMembers )(//héritage sans logique juste pour test
-    var Personnage = mu.easyProto("Personnage").
+//    var Personnage = easyProto().extend( EnumMembers )(//héritage sans logique juste pour test
+    var Personnage = easyProto("Personnage").
             extends_( Position )(//héritage sans logique juste pour test
         function ( _ ){
             with ( _ ){
@@ -397,7 +370,7 @@ function testExtends(){//demo mélange easyProto et prototype standard
         }
 
     /// BottomProto--- easyProto --- prototype ---->
-    var BottomProto = mu.easyProto("BottomProto"). extends_(Zombi)(//héritage sans logique juste pour test
+    var BottomProto = easyProto("BottomProto"). extends_(Zombi)(//héritage sans logique juste pour test
         function ( _ ){
             with ( _ ){
             static_. private_. nbrInstance = 0
@@ -415,7 +388,7 @@ function testExtends(){//demo mélange easyProto et prototype standard
 /****\\\                                     
 /* test----validation----|
 /****///                            
-    console.control("compatibilité héritage (trois extends) prototype-standard easyProto prototype-standard ")
+    console.control.start("compatibilité héritage (trois extends) prototype-standard easyProto prototype-standard ")
     var zombar = new Zombi(12, 13, "zombar",2)
 //    var zombig = new Zombi(14, 15, "zombig",7)
     var zombig = new BottomProto(14, 15, "zombig",7)
@@ -468,21 +441,23 @@ function testExtends(){//demo mélange easyProto et prototype standard
         ["EasyProto", "Zombi"])
         console.validate( zombig.constructor.name, zombar.constructor.name )
 
-    console.control ("end","fin compatibilité héritage (trois extends)")
-    console.control ("end","le mix ne peut être plus complexe pour l'instant, réfléchir à une généralisation return call constructeur")
-//    console.control ("end","fin testExtends()")
+    console.control.end("fin compatibilité héritage (trois extends)")
+//    console.control.end("le mix ne peut être plus complexe pour l'instant, réfléchir à une généralisation return call constructeur")
     }
 
 //*///
 
 </script>
+
+<script src="../easyProto.js" > </script>
+
 </head>
 <body>
 <pre>
 Attention: certain navigateur n'implémente pas la propriété name d'une fonction
     ce qui génère de fausses erreurs => undefined
     de même certain renvoie => value() pour des function déclarées par defineProperties 
-<a href="javascript:editTest('testLib',this)" >Test mu.easyProto()</a><br />
+<a href="javascript:editTest('testLib',this)" >Test easyProto()</a><br />
 <a href="javascript:editTest('testMultiInstance')" >Test multiInstance</a><br />
 <a href="javascript:editTest('testStatic')" >Test static</a><br />
 <a href="javascript:editTest('testExtends')" >Test héritage mix Protos prototypes </a><br />
@@ -502,6 +477,7 @@ Attention: certain navigateur n'implémente pas la propriété name d'une foncti
 <style type="text/css">
     .infoTitre {background-color: #D7620A;color:white;}
     .endTest {background-color: #57220A;color:white;}
+    .startTest {background-color: #57A20A;color:white;}
     .errorNbr {color: white; background-color: #D7020A;}
     .expected {
         color: #EA2690;
@@ -554,18 +530,34 @@ Attention: certain navigateur n'implémente pas la propriété name d'une foncti
                 appendEditControl("span", nbrError + " erreur(s)", "errorNbr")
                 }
             nbrError = 0
-            if (arguments[0] == "end"){
-                nbrValidate = 0
-                actualValidates = 0//fin d'une série de controles
-                editControl.appendChild(document.createElement("br"))
-                appendEditControl("span", arguments[1] , "endTest")
-                return
-                }
             dataControl = arguments
             nbrValidate = arguments.length - 1
             editControl.appendChild(document.createElement("br"))
             appendEditControl("span", arguments[0], "infoTitre")
             actualValidates = 0
+            }
+        which.control.start = function(){
+                nbrValidate = 0
+                actualValidates = 0//fin d'une série de controles
+                editControl.appendChild(document.createElement("br"))
+                appendEditControl("span", arguments[0] , "startTest")
+            }
+        which.control.end = function(){
+            if (actualValidates<nbrValidate){
+                var validateEnTrop = ""
+                for (var i = ++actualValidates; i <= nbrValidate; i++){nbrError++;
+                    editControl.appendChild(document.createElement("br"))
+                    appendEditControl("span", "controle en trop, attendu : " + dataControl[i], "tooControl")
+                    }
+                }
+            if (nbrError>0) {
+                editControl.appendChild(document.createElement("br"))
+                appendEditControl("span", nbrError + " erreur(s)", "errorNbr")
+                }                nbrValidate = 0
+            nbrError = 0
+            actualValidates = 0//fin d'une série de controles
+            editControl.appendChild(document.createElement("br"))
+            appendEditControl("span", arguments[0] , "endTest")
             }
         which.stop = function(){
             console.log(arguments)
@@ -603,6 +595,18 @@ Attention: certain navigateur n'implémente pas la propriété name d'une foncti
                 for (var i = arguments.length; i < dataControl[actualValidates].length; i++ ){appendEditControl("span", dataControl[actualValidates][i], "tooValideArgs")}
                 }
             }
+        which.validate.list = function(obj){
+            var members=[]
+            for (var member in obj){
+                members.push( member + ((typeof obj[member]=="function")
+                    ?(" => "+obj[member].name)+"()"
+                    :(typeof obj[member]=="object")
+                        ?(" => "+obj[member].constructor.name)+"()"
+                        :" : "+obj[member]) )
+                }
+            members.sort()    
+            which.validate.apply({},members)
+            }
         function appendEditControl(tagName, valueHTML, classTag){
             var tagInfo = document.createElement(tagName)
             tagInfo.className = classTag
@@ -619,8 +623,6 @@ Attention: certain navigateur n'implémente pas la propriété name d'une foncti
         tmp.innerHTML = ""
         this[which]()
         }
-        if (!mu){var mu = {}}
-        lib(mu)//active le module
 </script>
 <span id="dpmlId"></span>
 </body>
